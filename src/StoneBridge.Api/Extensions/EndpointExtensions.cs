@@ -17,6 +17,8 @@ public static class EndpointExtensions
         app.MapCatalogEndpoints();
         app.MapSupplierSlabEndpoints();
         app.MapSupplierProfileEndpoints();
+        app.MapWarehouseEndpoints();
+        app.MapBundleEndpoints();
 
         // Future endpoints (added as features are implemented):
         // app.MapPurchaseOrderEndpoints();
