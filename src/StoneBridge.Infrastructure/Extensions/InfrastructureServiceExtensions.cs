@@ -48,6 +48,7 @@ public static class InfrastructureServiceExtensions
         // Scoped: one repository instance per HTTP request.
         services.AddScoped<ICatalogRepository, CatalogRepository>();
         services.AddScoped<ISupplierSlabRepository, SupplierSlabRepository>();
+        services.AddScoped<ISupplierProfileRepository, SupplierProfileRepository>();
 
         // ── Current tenant service ─────────────────────────────────────────
         // Scoped: reads from HttpContext which is per-request.
