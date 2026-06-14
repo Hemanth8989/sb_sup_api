@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>StoneBridge.Application</AssemblyName>
+    <RootNamespace>StoneBridge.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <ProjectReference Include="..\StoneBridge.Domain\StoneBridge.Domain.csproj" />
+  </ItemGroup>
+</Project>

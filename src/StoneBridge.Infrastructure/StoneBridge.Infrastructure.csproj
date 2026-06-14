@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>StoneBridge.Infrastructure</AssemblyName>
+    <RootNamespace>StoneBridge.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Enrichers.Environment" />
+    <PackageReference Include="Serilog.Enrichers.Thread" />
+    <ProjectReference Include="..\StoneBridge.Application\StoneBridge.Application.csproj" />
+  </ItemGroup>
+</Project>

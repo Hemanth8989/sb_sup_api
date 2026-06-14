@@ -1,0 +1,78 @@
+## .NET / C# gitignore
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Rider
+.idea/
+*.sln.iml
+
+# User-specific files
+*.rsuser
+
+# MSBuild
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/repositories.config
+!**/packages/build/
+nuget.config
+
+# Publish
+[Pp]ublish/
+[Pp]ublish[Oo]utput/
+PublishProfiles/
+
+# ASP.NET
+wwwroot/lib/
+
+# Secret / environment config — keep Development in source control
+appsettings.Production.json
+appsettings.Staging.json
+secrets.json
+*.pfx
+*.p12
+.env
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yml
+
+# Test coverage
+coverage/
+TestResults/
+*.coverage
+*.coveragexml
+*.opencover.xml
+
+# Logs
+logs/
+*.log
+
+# Temp
+*.tmp
+*.temp
+~$*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

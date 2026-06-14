@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <AssemblyName>StoneBridge.Api</AssemblyName>
+    <RootNamespace>StoneBridge.Api</RootNamespace>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <UserSecretsId>stonebridge-api-secrets</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <ProjectReference Include="..\StoneBridge.Application\StoneBridge.Application.csproj" />
+    <ProjectReference Include="..\StoneBridge.Infrastructure\StoneBridge.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
