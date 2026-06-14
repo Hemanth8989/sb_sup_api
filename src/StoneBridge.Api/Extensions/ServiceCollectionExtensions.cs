@@ -55,7 +55,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
         IConfiguration          configuration)
-        => services.AddInfrastructureServices(configuration);  // delegates to Infrastructure extension
+        => StoneBridge.Infrastructure.Extensions.InfrastructureServiceExtensions
+            .AddInfrastructureServices(services, configuration);
 
     /// <summary>
     /// Register API layer services: JSON options, authentication, CORS, OpenAPI.
@@ -72,8 +73,44 @@ public static class ServiceCollectionExtensions
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
         });
 
-        // ── OpenAPI / Scalar ───────────────────────────────────────────────
-        services.AddOpenApi("v1");
+        // ── Swagger / OpenAPI ──────────────────────────────────────────────
+        // AddEndpointsApiExplorer is required for Minimal APIs — MVC uses AddControllers instead.
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new()
+            {
+                Title       = "StoneBridge API",
+                Version     = "v1",
+                Description = "Supplier–Fabricator real-time stone inventory and purchasing platform.",
+            });
+
+            // JWT Bearer auth — adds the Authorize button in Swagger UI
+            c.AddSecurityDefinition("Bearer", new()
+            {
+                Name         = "Authorization",
+                Type         = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                Scheme       = "bearer",
+                BearerFormat = "JWT",
+                In           = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                Description  = "Enter your Clerk JWT token. The 'Bearer ' prefix is added automatically.",
+            });
+
+            c.AddSecurityRequirement(new()
+            {
+                {
+                    new()
+                    {
+                        Reference = new()
+                        {
+                            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id   = "Bearer",
+                        },
+                    },
+                    []
+                },
+            });
+        });
 
         // ── CORS ───────────────────────────────────────────────────────────
         var allowedOrigins = configuration
@@ -117,3 +154,4 @@ public static class ServiceCollectionExtensions
         return services;
     }
 }
+

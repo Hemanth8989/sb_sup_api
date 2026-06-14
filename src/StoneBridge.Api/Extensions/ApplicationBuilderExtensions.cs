@@ -1,4 +1,3 @@
-using Scalar.AspNetCore;
 using StoneBridge.Api.Middleware;
 
 namespace StoneBridge.Api.Extensions;
@@ -22,17 +21,18 @@ public static class ApplicationBuilderExtensions
         // Assigns correlation IDs and logs method, path, status, elapsed ms.
         app.UseMiddleware<RequestLoggingMiddleware>();
 
-        // ── Development tooling ───────────────────────────────────────────
-        if (app.Environment.IsDevelopment())
+        // ── Swagger UI ────────────────────────────────────────────────────
+        // JSON spec: /swagger/v1/swagger.json
+        // Swagger UI: /swagger
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
         {
-            // Scalar API reference at /scalar/v1 (prettier than Swagger UI)
-            app.MapOpenApi();
-            app.MapScalarApiReference(options =>
-            {
-                options.Title = "StoneBridge API";
-                options.Theme = ScalarTheme.Moon;
-            });
-        }
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "StoneBridge API v1");
+            c.RoutePrefix        = "swagger";
+            c.DocumentTitle      = "StoneBridge API";
+            c.DisplayRequestDuration();
+            c.DefaultModelsExpandDepth(-1);   // collapse schema models by default
+        });
 
         // ── Security headers ──────────────────────────────────────────────
         app.UseHttpsRedirection();

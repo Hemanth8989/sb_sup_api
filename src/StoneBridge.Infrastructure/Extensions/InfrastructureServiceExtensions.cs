@@ -39,10 +39,10 @@ public static class InfrastructureServiceExtensions
         services.AddSingleton(dataSource);
 
         // ── Database factory ───────────────────────────────────────────────
-        // Singleton: the factory itself is stateless; the connections it creates are transient.
-        // DbConnectionFactory reads ICurrentTenant to set RLS context on each connection.
-        // ICurrentTenant must be resolved at connection-create time, not at factory-create time.
-        services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+        // Scoped: DbConnectionFactory injects ICurrentTenant (also Scoped/per-request).
+        // A Singleton cannot consume a Scoped service — DI validator rejects it at startup.
+        // NpgsqlDataSource (the actual connection pool) remains Singleton above.
+        services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 
         // ── Repositories ───────────────────────────────────────────────────
         // Scoped: one repository instance per HTTP request.
