@@ -38,6 +38,20 @@ public static class ApplicationBuilderExtensions
         app.UseHttpsRedirection();
         app.UseCors("StoneBridgeCors");
 
+        // ── Dev auth bypass ───────────────────────────────────────────────
+        // Injects a fake ClaimsPrincipal from appsettings when DevAuth:Enabled = true.
+        // Placed BEFORE UseAuthentication so it sets context.User first;
+        // UseAuthentication will then see an already-authenticated user and skip JWT validation.
+        var devAuthOptions = app.Services
+            .GetRequiredService<IConfiguration>()
+            .GetSection("DevAuth")
+            .Get<DevAuthOptions>() ?? new DevAuthOptions();
+
+        if (devAuthOptions.Enabled && app.Environment.IsDevelopment())
+        {
+            app.UseMiddleware<DevAuthMiddleware>(devAuthOptions);
+        }
+
         // ── Authentication and authorisation ──────────────────────────────
         app.UseAuthentication();
         app.UseAuthorization();
