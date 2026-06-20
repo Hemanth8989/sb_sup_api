@@ -1,32 +1,32 @@
--- ============================================================
--- V014: Seed data — development & testing
+﻿-- ============================================================
+-- V014: Seed data â€” development & testing
 --
 -- Creates a realistic multi-tenant dataset:
---   3 suppliers · 2 fabricators · 7 products · 8 variants
---   20 slabs · 4 connections · 2 jobs · 2 purchase orders
+--   3 suppliers Â· 2 fabricators Â· 7 products Â· 8 variants
+--   20 slabs Â· 4 connections Â· 2 jobs Â· 2 purchase orders
 --
 -- UUID key (all hex-valid):
---   Tenants : 11111111-… sup1  22222222-… sup2  33333333-… sup3
---             44444444-… fab1  55555555-… fab2
---   Users   : aa000001-… → aa000005-…
---   Warehouses : bb000001-… → bb000005-…
---   Products   : cc000001-… → cc000007-…
---   Variants   : dd000001-… → dd000008-…
---   Slabs sup1 : ee000001-… CW  ee010001-… CAL  ee020001-… AB
---   Slabs sup2 : ee030001-… BB  ee040001-… NW
---   Slabs sup3 : ee050001-… KW  ee060001-… UG
---   Connections : ff000001-… → ff000004-…
---   Addresses   : ad000001-… → ad000003-…
---   Jobs        : jb000001-… → jb000002-…
---   POs         : po000001-… → po000002-…
---   Line items  : li000001-… → li000002-…
+--   Tenants : 11111111-â€¦ sup1  22222222-â€¦ sup2  33333333-â€¦ sup3
+--             44444444-â€¦ fab1  55555555-â€¦ fab2
+--   Users   : aa000001-â€¦ â†’ aa000005-â€¦
+--   Warehouses : bb000001-â€¦ â†’ bb000005-â€¦
+--   Products   : cc000001-â€¦ â†’ cc000007-â€¦
+--   Variants   : dd000001-â€¦ â†’ dd000008-â€¦
+--   Slabs sup1 : ee000001-â€¦ CW  ee010001-â€¦ CAL  ee020001-â€¦ AB
+--   Slabs sup2 : ee030001-â€¦ BB  ee040001-â€¦ NW
+--   Slabs sup3 : ee050001-â€¦ KW  ee060001-â€¦ UG
+--   Connections : ff000001-â€¦ â†’ ff000004-â€¦
+--   Addresses   : ad000001-â€¦ â†’ ad000003-â€¦
+--   Jobs        : jb000001-â€¦ â†’ jb000002-â€¦
+--   POs         : po000001-â€¦ â†’ po000002-â€¦
+--   Line items  : li000001-â€¦ â†’ li000002-â€¦
 --
 -- Must run as PostgreSQL superuser (RLS FORCE on tenants / profiles).
 -- ============================================================
 
 SET row_security = OFF;
 
--- ── Tenants ───────────────────────────────────────────────────────────────────
+-- â”€â”€ Tenants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO tenants (id, type, name, slug, plan, country, is_active, created_at, updated_at) VALUES
     ('11111111-1111-1111-1111-111111111111', 'supplier',   'Marble Masters Inc',      'marble-masters',    'pro',        'US', TRUE, NOW() - INTERVAL '6 months', NOW()),
     ('22222222-2222-2222-2222-222222222222', 'supplier',   'Stone Source LLC',         'stone-source',      'starter',    'US', TRUE, NOW() - INTERVAL '4 months', NOW()),
@@ -34,7 +34,7 @@ INSERT INTO tenants (id, type, name, slug, plan, country, is_active, created_at,
     ('44444444-4444-4444-4444-444444444444', 'fabricator', 'Countertop Kings',         'countertop-kings',  'pro',        'US', TRUE, NOW() - INTERVAL '5 months', NOW()),
     ('55555555-5555-5555-5555-555555555555', 'fabricator', 'Elite Surfaces & Stone',   'elite-surfaces',    'starter',    'US', TRUE, NOW() - INTERVAL '3 months', NOW());
 
--- ── Users ─────────────────────────────────────────────────────────────────────
+-- â”€â”€ Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO users (id, tenant_id, clerk_user_id, email, full_name, role, is_active, created_at, updated_at) VALUES
     ('aa000001-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'user_seed_sup1_owner', 'owner@marblemasters.dev',  'Marco Rossi',     'owner', TRUE, NOW() - INTERVAL '6 months', NOW()),
     ('aa000002-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'user_seed_sup2_owner', 'owner@stonesource.dev',    'Sarah Mitchell',  'owner', TRUE, NOW() - INTERVAL '4 months', NOW()),
@@ -42,7 +42,7 @@ INSERT INTO users (id, tenant_id, clerk_user_id, email, full_name, role, is_acti
     ('aa000004-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'user_seed_fab1_owner', 'owner@countertopkings.dev','James Hawkins',   'owner', TRUE, NOW() - INTERVAL '5 months', NOW()),
     ('aa000005-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', 'user_seed_fab2_owner', 'owner@elitesurfaces.dev',  'Angela Torres',   'owner', TRUE, NOW() - INTERVAL '3 months', NOW());
 
--- ── Supplier profiles ─────────────────────────────────────────────────────────
+-- â”€â”€ Supplier profiles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO supplier_profiles (
     tenant_id, display_name, description, website, phone,
     address_line1, address_line2, city, state_province, postal_code, country,
@@ -85,7 +85,7 @@ INSERT INTO supplier_profiles (
     NOW() - INTERVAL '8 months', NOW()
 );
 
--- ── Fabricator profiles ───────────────────────────────────────────────────────
+-- â”€â”€ Fabricator profiles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO fabricator_profiles (
     tenant_id, display_name, description, website, phone,
     address_line1, city, state_province, postal_code, country,
@@ -113,7 +113,7 @@ INSERT INTO fabricator_profiles (
     NOW() - INTERVAL '3 months', NOW()
 );
 
--- ── Warehouses ────────────────────────────────────────────────────────────────
+-- â”€â”€ Warehouses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO warehouses (id, tenant_id, name, address_line1, city, state_province, postal_code, country, phone, is_primary, is_active, created_at, updated_at) VALUES
     ('bb000001-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'Norcross Main Yard',    '1400 Peachtree Industrial Blvd', 'Norcross', 'GA', '30071', 'US', '+1 (404) 555-0101', TRUE,  TRUE, NOW() - INTERVAL '6 months', NOW()),
     ('bb000002-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'Smyrna Overflow Yard',  '600 Cobb Pkwy N',               'Smyrna',   'GA', '30080', 'US', '+1 (404) 555-0102', FALSE, TRUE, NOW() - INTERVAL '3 months', NOW()),
@@ -121,7 +121,7 @@ INSERT INTO warehouses (id, tenant_id, name, address_line1, city, state_province
     ('bb000004-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'Atlanta Showroom Yard', '3250 Buford Highway NE',        'Atlanta',  'GA', '30329', 'US', '+1 (770) 555-0303', TRUE,  TRUE, NOW() - INTERVAL '8 months', NOW()),
     ('bb000005-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', 'Marietta Secondary',    '2900 Canton Rd',                'Marietta', 'GA', '30066', 'US', '+1 (770) 555-0304', FALSE, TRUE, NOW() - INTERVAL '6 months', NOW());
 
--- ── Products ──────────────────────────────────────────────────────────────────
+-- â”€â”€ Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Marble Masters (sup1)
 INSERT INTO products (id, tenant_id, category_code, name, brand, short_description, is_active, created_by, created_at, updated_at) VALUES
     ('cc000001-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'slab',
@@ -163,7 +163,7 @@ INSERT INTO products (id, tenant_id, category_code, name, brand, short_descripti
      'Deep forest-green Brazilian granite with golden flecks. A classic choice that never goes out of style.',
      TRUE, 'aa000003-0000-0000-0000-000000000000', NOW() - INTERVAL '7 months', NOW());
 
--- ── Product variants (all slab variants — qty_available must be NULL) ─────────
+-- â”€â”€ Product variants (all slab variants â€” qty_available must be NULL) â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO product_variants (
     id, product_id, tenant_id, sku, variant_name, attributes,
     unit_of_measure, base_price, currency, qty_available,
@@ -212,8 +212,8 @@ INSERT INTO product_variants (
      '{"thickness_cm":3,"finish":"polished","color_family":"green","pattern":"flecked"}'::jsonb,
      'sqft', 16.00, 'USD', NULL, TRUE, 'active', 2, NOW() - INTERVAL '7 months', NOW());
 
--- ── Slabs — Marble Masters (sup1) ────────────────────────────────────────────
--- net_sqft, net_sqm, search_vector are GENERATED ALWAYS AS STORED — omit from INSERT
+-- â”€â”€ Slabs â€” Marble Masters (sup1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- net_sqft, net_sqm, search_vector are GENERATED ALWAYS AS STORED â€” omit from INSERT
 
 -- Carrara White 3cm Polished (variant dd000001)
 INSERT INTO slabs (
@@ -297,7 +297,7 @@ INSERT INTO slabs (
      3.0, 'polished', 3200, 1600, 32.00, 'bb000002-0000-0000-0000-000000000000', 'E-01-L',
      'A', 'available', TRUE, 'aa000001-0000-0000-0000-000000000000', NOW() - INTERVAL '1 month',  NOW());
 
--- ── Slabs — Stone Source (sup2) ───────────────────────────────────────────────
+-- â”€â”€ Slabs â€” Stone Source (sup2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Blue Bahia 3cm Polished (variant dd000005)
 INSERT INTO slabs (
     id, variant_id, tenant_id, internal_ref,
@@ -331,7 +331,7 @@ INSERT INTO slabs (
      3.0, 'honed', 3100, 1600, 68.00, 'bb000003-0000-0000-0000-000000000000', 'B-01-L',
      'A', 'available', TRUE, 'aa000002-0000-0000-0000-000000000000', NOW() - INTERVAL '2 months', NOW());
 
--- ── Slabs — Premier Granite (sup3) ───────────────────────────────────────────
+-- â”€â”€ Slabs â€” Premier Granite (sup3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- Kashmir White 3cm Polished (variant dd000007)
 INSERT INTO slabs (
     id, variant_id, tenant_id, internal_ref,
@@ -375,13 +375,13 @@ INSERT INTO slabs (
      3.0, 'polished', 3150, 1600, 16.00, 'bb000004-0000-0000-0000-000000000000', 'B-01-R',
      'A', 'available', TRUE, 'aa000003-0000-0000-0000-000000000000', NOW() - INTERVAL '6 months', NOW());
 
--- ── Connections ───────────────────────────────────────────────────────────────
+-- â”€â”€ Connections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO connections (
     id, fabricator_id, supplier_id, status, pricing_tier,
     initiated_by, approved_by, request_message,
     requested_at, connected_at, created_at, updated_at
 ) VALUES
-    -- fab1 ↔ sup1: active preferred — the main trading relationship
+    -- fab1 â†” sup1: active preferred â€” the main trading relationship
     ('ff000001-0000-0000-0000-000000000000',
      '44444444-4444-4444-4444-444444444444', '11111111-1111-1111-1111-111111111111',
      'active', 'preferred',
@@ -390,7 +390,7 @@ INSERT INTO connections (
      NOW() - INTERVAL '4 months', NOW() - INTERVAL '4 months' + INTERVAL '2 days',
      NOW() - INTERVAL '4 months', NOW()),
 
-    -- fab1 ↔ sup2: active standard
+    -- fab1 â†” sup2: active standard
     ('ff000002-0000-0000-0000-000000000000',
      '44444444-4444-4444-4444-444444444444', '22222222-2222-2222-2222-222222222222',
      'active', 'standard',
@@ -399,7 +399,7 @@ INSERT INTO connections (
      NOW() - INTERVAL '2 months', NOW() - INTERVAL '2 months' + INTERVAL '1 day',
      NOW() - INTERVAL '2 months', NOW()),
 
-    -- fab2 ↔ sup1: active standard
+    -- fab2 â†” sup1: active standard
     ('ff000003-0000-0000-0000-000000000000',
      '55555555-5555-5555-5555-555555555555', '11111111-1111-1111-1111-111111111111',
      'active', 'standard',
@@ -408,7 +408,7 @@ INSERT INTO connections (
      NOW() - INTERVAL '2 months', NOW() - INTERVAL '2 months' + INTERVAL '3 days',
      NOW() - INTERVAL '2 months', NOW()),
 
-    -- fab2 ↔ sup3: pending (no approved_by yet)
+    -- fab2 â†” sup3: pending (no approved_by yet)
     ('ff000004-0000-0000-0000-000000000000',
      '55555555-5555-5555-5555-555555555555', '33333333-3333-3333-3333-333333333333',
      'pending', 'standard',
@@ -417,26 +417,26 @@ INSERT INTO connections (
      NOW() - INTERVAL '3 days', NULL,
      NOW() - INTERVAL '3 days', NOW());
 
--- Connection history — manual because trigger only fires on UPDATE, not INSERT
+-- Connection history â€” manual because trigger only fires on UPDATE, not INSERT
 INSERT INTO connection_history (id, connection_id, from_status, to_status, changed_by, reason, changed_at) VALUES
     ('cf000001-0000-0000-0000-000000000000', 'ff000001-0000-0000-0000-000000000000', 'pending', 'active',  'aa000001-0000-0000-0000-000000000000', NULL, NOW() - INTERVAL '4 months' + INTERVAL '2 days'),
     ('cf000002-0000-0000-0000-000000000000', 'ff000002-0000-0000-0000-000000000000', 'pending', 'active',  'aa000002-0000-0000-0000-000000000000', NULL, NOW() - INTERVAL '2 months' + INTERVAL '1 day'),
     ('cf000003-0000-0000-0000-000000000000', 'ff000003-0000-0000-0000-000000000000', 'pending', 'active',  'aa000001-0000-0000-0000-000000000000', NULL, NOW() - INTERVAL '2 months' + INTERVAL '3 days');
 
--- ── Addresses ─────────────────────────────────────────────────────────────────
+-- â”€â”€ Addresses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO addresses (id, tenant_id, label, line1, line2, city, state_province, postal_code, country, is_default, created_at) VALUES
     ('ad000001-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'Shop',     '4455 Industrial Way',      NULL,        'Duluth',  'GA', '30096', 'US', TRUE,  NOW() - INTERVAL '5 months'),
     ('ad000002-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', 'Job Site', '140 Peachtree St NW',      'Suite 100', 'Atlanta', 'GA', '30303', 'US', FALSE, NOW() - INTERVAL '1 month'),
     ('ad000003-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', 'Shop',     '720 Ponce De Leon Ave NE', NULL,        'Atlanta', 'GA', '30306', 'US', TRUE,  NOW() - INTERVAL '3 months');
 
--- ── Jobs (fab1 = Countertop Kings) ───────────────────────────────────────────
+-- â”€â”€ Jobs (fab1 = Countertop Kings) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO jobs (
     id, tenant_id, job_number, job_name,
     customer_name, customer_email, customer_phone,
     status, template_date, fabrication_date, install_date,
     material_budget, notes, created_by, created_at, updated_at
 ) VALUES
-    ('jb000001-0000-0000-0000-000000000000',
+    ('0b000001-0000-0000-0000-000000000000',
      '44444444-4444-4444-4444-444444444444',
      'JOB-2026-0001', 'Smith Kitchen Renovation',
      'Robert & Linda Smith', 'linda.smith@email.example.com', '+1 (770) 555-9901',
@@ -446,7 +446,7 @@ INSERT INTO jobs (
      'aa000004-0000-0000-0000-000000000000',
      NOW() - INTERVAL '3 weeks', NOW()),
 
-    ('jb000002-0000-0000-0000-000000000000',
+    ('0b000002-0000-0000-0000-000000000000',
      '44444444-4444-4444-4444-444444444444',
      'JOB-2026-0002', 'Johnson Master Bath',
      'Thomas Johnson', 'tom.johnson@email.example.com', '+1 (404) 555-8822',
@@ -456,10 +456,10 @@ INSERT INTO jobs (
      'aa000004-0000-0000-0000-000000000000',
      NOW() - INTERVAL '1 week', NOW());
 
--- ── Purchase Orders ───────────────────────────────────────────────────────────
--- PO-2026-000001: sent (fab1 → sup1, Smith Kitchen)
---   Line 1: Calacatta Gold 3cm Pol — slab CAL3P-001 (ee010001), 55.11 sqft × $85 = $4,684.35
---   Line 2: Carrara White 3cm Pol  — slab CW3P-001  (ee000001), 56.83 sqft × $28.50 = $1,619.66
+-- â”€â”€ Purchase Orders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- PO-2026-000001: sent (fab1 â†’ sup1, Smith Kitchen)
+--   Line 1: Calacatta Gold 3cm Pol â€” slab CAL3P-001 (ee010001), 55.11 sqft Ã— $85 = $4,684.35
+--   Line 2: Carrara White 3cm Pol  â€” slab CW3P-001  (ee000001), 56.83 sqft Ã— $28.50 = $1,619.66
 --   Total: $6,304.01
 INSERT INTO purchase_orders (
     id, po_number, fabricator_id, supplier_id, job_id,
@@ -469,21 +469,21 @@ INSERT INTO purchase_orders (
     fabricator_notes,
     sent_at, created_by, created_at, updated_at
 ) VALUES (
-    'po000001-0000-0000-0000-000000000000',
+    'c0000001-0000-0000-0000-000000000000',
     'PO-2026-000001',
     '44444444-4444-4444-4444-444444444444',
     '11111111-1111-1111-1111-111111111111',
-    'jb000001-0000-0000-0000-000000000000',
+    '0b000001-0000-0000-0000-000000000000',
     'sent', NOW() - INTERVAL '5 days',
     6304.01, 6304.01, 'USD',
     'ad000001-0000-0000-0000-000000000000', '2026-06-18',
-    'Please pack securely — these are going straight to the shop for fabrication next week.',
+    'Please pack securely â€” these are going straight to the shop for fabrication next week.',
     NOW() - INTERVAL '5 days',
     'aa000004-0000-0000-0000-000000000000',
     NOW() - INTERVAL '5 days', NOW()
 );
 
--- PO-2026-000002: draft (fab1 → sup1, Johnson Bath — not sent yet)
+-- PO-2026-000002: draft (fab1 â†’ sup1, Johnson Bath â€” not sent yet)
 INSERT INTO purchase_orders (
     id, po_number, fabricator_id, supplier_id, job_id,
     status, status_changed,
@@ -492,11 +492,11 @@ INSERT INTO purchase_orders (
     fabricator_notes,
     created_by, created_at, updated_at
 ) VALUES (
-    'po000002-0000-0000-0000-000000000000',
+    'c0000002-0000-0000-0000-000000000000',
     'PO-2026-000002',
     '44444444-4444-4444-4444-444444444444',
     '11111111-1111-1111-1111-111111111111',
-    'jb000002-0000-0000-0000-000000000000',
+    '0b000002-0000-0000-0000-000000000000',
     'draft', NOW() - INTERVAL '2 days',
     0.00, 0.00, 'USD',
     'ad000001-0000-0000-0000-000000000000',
@@ -505,15 +505,15 @@ INSERT INTO purchase_orders (
     NOW() - INTERVAL '2 days', NOW()
 );
 
--- PO status history (trigger fires on UPDATE, not INSERT — seed manually)
+-- PO status history (trigger fires on UPDATE, not INSERT â€” seed manually)
 INSERT INTO po_status_history (id, po_id, from_status, to_status, changed_by, note, changed_at) VALUES
-    ('ph000001-0000-0000-0000-000000000000',
-     'po000001-0000-0000-0000-000000000000',
+    ('e0000001-0000-0000-0000-000000000000',
+     'c0000001-0000-0000-0000-000000000000',
      'draft', 'sent', 'aa000004-0000-0000-0000-000000000000',
      'Sent to Marble Masters for Smith Kitchen project.',
      NOW() - INTERVAL '5 days');
 
--- ── PO line items ─────────────────────────────────────────────────────────────
+-- â”€â”€ PO line items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 INSERT INTO po_line_items (
     id, po_id, variant_id, slab_id,
     item_snapshot,
@@ -521,8 +521,8 @@ INSERT INTO po_line_items (
     status, created_at, updated_at
 ) VALUES
 (
-    'li000001-0000-0000-0000-000000000000',
-    'po000001-0000-0000-0000-000000000000',
+    'd0000001-0000-0000-0000-000000000000',
+    'c0000001-0000-0000-0000-000000000000',
     'dd000003-0000-0000-0000-000000000000',
     'ee010001-0000-0000-0000-000000000000',
     '{"material_name":"Calacatta Gold","variant_name":"Calacatta Gold 3cm Polished","sku":"MM-CAL-3CM-POL","internal_ref":"CAL3P-001","gross_length_mm":3200,"gross_width_mm":1600,"thickness_cm":3,"finish":"polished","quality_grade":"A","warehouse":"Norcross Main Yard","rack_location":"B-01-L"}'::jsonb,
@@ -530,8 +530,8 @@ INSERT INTO po_line_items (
     'pending', NOW() - INTERVAL '5 days', NOW()
 ),
 (
-    'li000002-0000-0000-0000-000000000000',
-    'po000001-0000-0000-0000-000000000000',
+    'd0000002-0000-0000-0000-000000000000',
+    'c0000001-0000-0000-0000-000000000000',
     'dd000001-0000-0000-0000-000000000000',
     'ee000001-0000-0000-0000-000000000000',
     '{"material_name":"Carrara White","variant_name":"Carrara White 3cm Polished","sku":"MM-CW-3CM-POL","internal_ref":"CW3P-001","gross_length_mm":3200,"gross_width_mm":1650,"thickness_cm":3,"finish":"polished","quality_grade":"A","warehouse":"Norcross Main Yard","rack_location":"A-01-L"}'::jsonb,
@@ -539,10 +539,10 @@ INSERT INTO po_line_items (
     'pending', NOW() - INTERVAL '5 days', NOW()
 );
 
--- ── Reserve slabs that are on the sent PO ─────────────────────────────────────
+-- â”€â”€ Reserve slabs that are on the sent PO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 UPDATE slabs
 SET    status         = 'reserved',
-       reserved_for_po = 'po000001-0000-0000-0000-000000000000',
+       reserved_for_po = 'c0000001-0000-0000-0000-000000000000',
        status_changed  = NOW() - INTERVAL '5 days',
        updated_at      = NOW() - INTERVAL '5 days'
 WHERE  id IN (
@@ -551,3 +551,4 @@ WHERE  id IN (
 );
 
 RESET row_security;
+

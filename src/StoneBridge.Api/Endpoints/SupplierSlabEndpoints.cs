@@ -77,9 +77,7 @@ public static class SupplierSlabEndpoints
 
             var result = await sender.Send(new GetSupplierSlabsQuery(filterParams), ct);
 
-            return Results.Ok(ApiResponse<PagedResult<SupplierSlabDto>>.Ok(
-                result,
-                ApiMeta.From(result)));
+            return Results.Ok(result);
         })
         .WithName("GetSupplierInventory")
         .WithSummary("Get the supplier's slab inventory.")
@@ -101,7 +99,7 @@ public static class SupplierSlabEndpoints
             Sort options: updatedAt (default), status, internalRef, netSqft, createdAt
             Sort directions: DESC (default), ASC
             """)
-        .Produces<ApiResponse<PagedResult<SupplierSlabDto>>>(StatusCodes.Status200OK)
+        .Produces<PagedResult<SupplierSlabDto>>(StatusCodes.Status200OK)
         .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
         .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
         .Produces<ValidationProblemDetails>(StatusCodes.Status422UnprocessableEntity);
