@@ -50,6 +50,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ISupplierSlabRepository, SupplierSlabRepository>();
         services.AddScoped<ISupplierProfileRepository, SupplierProfileRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+        services.AddScoped<IWarehouseProductStockRepository, WarehouseProductStockRepository>();
         services.AddScoped<IBundleRepository, BundleRepository>();
         services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
         services.AddScoped<IConnectionRepository, ConnectionRepository>();

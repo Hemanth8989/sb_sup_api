@@ -10,7 +10,7 @@ public sealed class WarehouseRepository : IWarehouseRepository
 
     public WarehouseRepository(IDbConnectionFactory db) => _db = db;
 
-    // ── List with live slab stats ──────────────────────────────────────────
+    // ── List with live slab + product stock stats ─────────────────────────
     public async Task<IReadOnlyList<WarehouseDto>> GetAllAsync(
         Guid tenantId, CancellationToken ct = default)
     {
@@ -19,11 +19,14 @@ public sealed class WarehouseRepository : IWarehouseRepository
                 w.id, w.name, w.address_line1, w.city, w.state_province,
                 w.postal_code, w.country, w.phone,
                 w.is_primary, w.is_active, w.created_at, w.updated_at,
-                COALESCE(agg.slab_count,      0)    AS slab_count,
-                COALESCE(agg.available_count, 0)    AS available_count,
-                COALESCE(agg.reserved_count,  0)    AS reserved_count,
-                COALESCE(agg.on_hold_count,   0)    AS on_hold_count,
-                agg.estimated_value
+                COALESCE(sagg.slab_count,      0)   AS slab_count,
+                COALESCE(sagg.available_count, 0)   AS available_count,
+                COALESCE(sagg.reserved_count,  0)   AS reserved_count,
+                COALESCE(sagg.on_hold_count,   0)   AS on_hold_count,
+                sagg.estimated_value,
+                COALESCE(pagg.product_sku_count, 0) AS product_sku_count,
+                COALESCE(pagg.low_stock_count,   0) AS low_stock_count,
+                pagg.product_stock_value
             FROM warehouses w
             LEFT JOIN (
                 SELECT
@@ -38,7 +41,20 @@ public sealed class WarehouseRepository : IWarehouseRepository
                 JOIN   product_variants pv ON pv.id = s.variant_id
                 WHERE  s.is_active = TRUE AND s.tenant_id = @tenantId
                 GROUP BY s.warehouse_id
-            ) agg ON agg.warehouse_id = w.id
+            ) sagg ON sagg.warehouse_id = w.id
+            LEFT JOIN (
+                SELECT
+                    wps.warehouse_id,
+                    COUNT(*)                                                                     AS product_sku_count,
+                    COUNT(*) FILTER (
+                        WHERE wps.reorder_point IS NOT NULL AND wps.qty_on_hand <= wps.reorder_point
+                    )                                                                            AS low_stock_count,
+                    ROUND(SUM(wps.qty_on_hand * pv2.base_price), 2)                             AS product_stock_value
+                FROM   warehouse_product_stock wps
+                JOIN   product_variants pv2 ON pv2.id = wps.variant_id
+                WHERE  wps.tenant_id = @tenantId AND pv2.is_slab_variant = FALSE
+                GROUP BY wps.warehouse_id
+            ) pagg ON pagg.warehouse_id = w.id
             WHERE  w.tenant_id = @tenantId AND w.is_active = TRUE
             ORDER BY w.is_primary DESC, w.name ASC
             """;
@@ -57,11 +73,14 @@ public sealed class WarehouseRepository : IWarehouseRepository
                 w.id, w.name, w.address_line1, w.city, w.state_province,
                 w.postal_code, w.country, w.phone,
                 w.is_primary, w.is_active, w.created_at, w.updated_at,
-                COALESCE(agg.slab_count,      0)    AS slab_count,
-                COALESCE(agg.available_count, 0)    AS available_count,
-                COALESCE(agg.reserved_count,  0)    AS reserved_count,
-                COALESCE(agg.on_hold_count,   0)    AS on_hold_count,
-                agg.estimated_value
+                COALESCE(sagg.slab_count,      0)   AS slab_count,
+                COALESCE(sagg.available_count, 0)   AS available_count,
+                COALESCE(sagg.reserved_count,  0)   AS reserved_count,
+                COALESCE(sagg.on_hold_count,   0)   AS on_hold_count,
+                sagg.estimated_value,
+                COALESCE(pagg.product_sku_count, 0) AS product_sku_count,
+                COALESCE(pagg.low_stock_count,   0) AS low_stock_count,
+                pagg.product_stock_value
             FROM warehouses w
             LEFT JOIN (
                 SELECT
@@ -76,7 +95,20 @@ public sealed class WarehouseRepository : IWarehouseRepository
                 JOIN   product_variants pv ON pv.id = s.variant_id
                 WHERE  s.is_active = TRUE AND s.tenant_id = @tenantId
                 GROUP BY s.warehouse_id
-            ) agg ON agg.warehouse_id = w.id
+            ) sagg ON sagg.warehouse_id = w.id
+            LEFT JOIN (
+                SELECT
+                    wps.warehouse_id,
+                    COUNT(*)                                                                     AS product_sku_count,
+                    COUNT(*) FILTER (
+                        WHERE wps.reorder_point IS NOT NULL AND wps.qty_on_hand <= wps.reorder_point
+                    )                                                                            AS low_stock_count,
+                    ROUND(SUM(wps.qty_on_hand * pv2.base_price), 2)                             AS product_stock_value
+                FROM   warehouse_product_stock wps
+                JOIN   product_variants pv2 ON pv2.id = wps.variant_id
+                WHERE  wps.tenant_id = @tenantId AND pv2.is_slab_variant = FALSE
+                GROUP BY wps.warehouse_id
+            ) pagg ON pagg.warehouse_id = w.id
             WHERE  w.tenant_id = @tenantId AND w.id = @warehouseId
             """;
 
@@ -217,43 +249,49 @@ public sealed class WarehouseRepository : IWarehouseRepository
     // ── Mapping ────────────────────────────────────────────────────────────
     private static WarehouseDto MapToDto(WarehouseRow r) => new()
     {
-        Id             = r.Id,
-        Name           = r.Name,
-        AddressLine1   = r.AddressLine1,
-        City           = r.City,
-        StateProvince  = r.StateProvince,
-        PostalCode     = r.PostalCode,
-        Country        = r.Country,
-        Phone          = r.Phone,
-        IsPrimary      = r.IsPrimary,
-        IsActive       = r.IsActive,
-        SlabCount      = r.SlabCount,
-        AvailableCount = r.AvailableCount,
-        ReservedCount  = r.ReservedCount,
-        OnHoldCount    = r.OnHoldCount,
-        EstimatedValue = r.EstimatedValue,
-        CreatedAt      = r.CreatedAt,
-        UpdatedAt      = r.UpdatedAt,
+        Id                 = r.Id,
+        Name               = r.Name,
+        AddressLine1       = r.AddressLine1,
+        City               = r.City,
+        StateProvince      = r.StateProvince,
+        PostalCode         = r.PostalCode,
+        Country            = r.Country,
+        Phone              = r.Phone,
+        IsPrimary          = r.IsPrimary,
+        IsActive           = r.IsActive,
+        SlabCount          = r.SlabCount,
+        AvailableCount     = r.AvailableCount,
+        ReservedCount      = r.ReservedCount,
+        OnHoldCount        = r.OnHoldCount,
+        EstimatedValue     = r.EstimatedValue,
+        ProductSkuCount    = r.ProductSkuCount,
+        LowStockCount      = r.LowStockCount,
+        ProductStockValue  = r.ProductStockValue,
+        CreatedAt          = r.CreatedAt,
+        UpdatedAt          = r.UpdatedAt,
     };
 
     private sealed class WarehouseRow
     {
-        public Guid     Id             { get; init; }
-        public string   Name           { get; init; } = string.Empty;
-        public string?  AddressLine1   { get; init; }
-        public string?  City           { get; init; }
-        public string?  StateProvince  { get; init; }
-        public string?  PostalCode     { get; init; }
-        public string   Country        { get; init; } = "US";
-        public string?  Phone          { get; init; }
-        public bool     IsPrimary      { get; init; }
-        public bool     IsActive       { get; init; }
-        public int      SlabCount      { get; init; }
-        public int      AvailableCount { get; init; }
-        public int      ReservedCount  { get; init; }
-        public int      OnHoldCount    { get; init; }
-        public decimal? EstimatedValue { get; init; }
-        public DateTime CreatedAt      { get; init; }
-        public DateTime UpdatedAt      { get; init; }
+        public Guid     Id                { get; init; }
+        public string   Name              { get; init; } = string.Empty;
+        public string?  AddressLine1      { get; init; }
+        public string?  City              { get; init; }
+        public string?  StateProvince     { get; init; }
+        public string?  PostalCode        { get; init; }
+        public string   Country           { get; init; } = "US";
+        public string?  Phone             { get; init; }
+        public bool     IsPrimary         { get; init; }
+        public bool     IsActive          { get; init; }
+        public int      SlabCount         { get; init; }
+        public int      AvailableCount    { get; init; }
+        public int      ReservedCount     { get; init; }
+        public int      OnHoldCount       { get; init; }
+        public decimal? EstimatedValue    { get; init; }
+        public int      ProductSkuCount   { get; init; }
+        public int      LowStockCount     { get; init; }
+        public decimal? ProductStockValue { get; init; }
+        public DateTime CreatedAt         { get; init; }
+        public DateTime UpdatedAt         { get; init; }
     }
 }
