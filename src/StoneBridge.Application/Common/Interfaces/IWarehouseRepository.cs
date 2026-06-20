@@ -11,27 +11,34 @@ public interface IWarehouseRepository
     Task SetPrimaryAsync(Guid tenantId, Guid warehouseId, CancellationToken ct = default);
     Task DeactivateAsync(Guid tenantId, Guid warehouseId, CancellationToken ct = default);
     Task<int> TransferSlabsAsync(Guid tenantId, IEnumerable<Guid> slabIds, Guid targetWarehouseId, string? rackLocation, CancellationToken ct = default);
+    Task<IReadOnlyList<WarehouseAuditEventDto>> GetAuditLogAsync(Guid tenantId, Guid warehouseId, int limit = 200, CancellationToken ct = default);
+    Task<string> ExportSlabsAsCsvAsync(Guid tenantId, Guid warehouseId, CancellationToken ct = default);
+    Task<IReadOnlyList<WarehouseBundleDto>> GetBundlesAsync(Guid tenantId, Guid warehouseId, CancellationToken ct = default);
 }
 
 public sealed record CreateWarehouseRequest(
-    string  Name,
-    string? AddressLine1,
-    string? City,
-    string? StateProvince,
-    string? PostalCode,
-    string? Country,
-    string? Phone,
-    bool    SetAsPrimary
+    string   Name,
+    string?  AddressLine1,
+    string?  City,
+    string?  StateProvince,
+    string?  PostalCode,
+    string?  Country,
+    string?  Phone,
+    bool     SetAsPrimary,
+    decimal? CapacitySqft,
+    string?  Notes
 );
 
 public sealed record UpdateWarehouseRequest(
-    string  Name,
-    string? AddressLine1,
-    string? City,
-    string? StateProvince,
-    string? PostalCode,
-    string? Country,
-    string? Phone
+    string   Name,
+    string?  AddressLine1,
+    string?  City,
+    string?  StateProvince,
+    string?  PostalCode,
+    string?  Country,
+    string?  Phone,
+    decimal? CapacitySqft,
+    string?  Notes
 );
 
 public sealed record TransferSlabsRequest(

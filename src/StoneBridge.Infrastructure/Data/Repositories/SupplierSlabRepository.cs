@@ -438,7 +438,7 @@ public sealed class SupplierSlabRepository : ISupplierSlabRepository
     public async Task<SupplierSlabDto?> UpdateStatusAsync(
         Guid supplierId, Guid slabId, string status, CancellationToken ct = default)
     {
-        const string sql = """
+        const string updateSql = """
             UPDATE slabs
             SET status         = @Status,
                 status_changed = NOW(),
@@ -446,9 +446,21 @@ public sealed class SupplierSlabRepository : ISupplierSlabRepository
             WHERE id = @SlabId AND tenant_id = @SupplierId AND is_active = TRUE
             """;
 
+        const string logSql = """
+            INSERT INTO slab_events (tenant_id, slab_id, event_type, new_value)
+            VALUES (@SupplierId, @SlabId, 'status_change', @Status)
+            """;
+
         using var conn = await _connectionFactory.CreateConnectionAsync(ct);
-        var affected = await conn.ExecuteAsync(sql, new { SlabId = slabId, SupplierId = supplierId, Status = status });
-        if (affected == 0) { return null; }
+        using var txn  = conn.BeginTransaction();
+        var affected = await conn.ExecuteAsync(updateSql, new { SlabId = slabId, SupplierId = supplierId, Status = status }, txn);
+        if (affected == 0)
+        {
+            txn.Rollback();
+            return null;
+        }
+        await conn.ExecuteAsync(logSql, new { SlabId = slabId, SupplierId = supplierId, Status = status }, txn);
+        txn.Commit();
         return await GetByIdAsync(supplierId, slabId, ct);
     }
 
@@ -473,7 +485,7 @@ public sealed class SupplierSlabRepository : ISupplierSlabRepository
     {
         if (slabIds.Count == 0) { return 0; }
 
-        const string sql = """
+        const string updateSql = """
             UPDATE slabs
             SET status         = @Status,
                 status_changed = NOW(),
@@ -481,8 +493,23 @@ public sealed class SupplierSlabRepository : ISupplierSlabRepository
             WHERE id = ANY(@SlabIds) AND tenant_id = @SupplierId AND is_active = TRUE
             """;
 
+        const string logSql = """
+            INSERT INTO slab_events (tenant_id, slab_id, event_type, new_value)
+            SELECT @SupplierId, s.id, 'status_change', @Status
+            FROM   slabs s
+            WHERE  s.id = ANY(@SlabIds) AND s.tenant_id = @SupplierId AND s.is_active = TRUE
+            """;
+
+        var arr = slabIds.ToArray();
         using var conn = await _connectionFactory.CreateConnectionAsync(ct);
-        return await conn.ExecuteAsync(sql, new { SlabIds = slabIds.ToArray(), SupplierId = supplierId, Status = status });
+        using var txn  = conn.BeginTransaction();
+        var affected = await conn.ExecuteAsync(updateSql, new { SlabIds = arr, SupplierId = supplierId, Status = status }, txn);
+        if (affected > 0)
+        {
+            await conn.ExecuteAsync(logSql, new { SlabIds = arr, SupplierId = supplierId, Status = status }, txn);
+        }
+        txn.Commit();
+        return affected;
     }
 
     public async Task<bool> DeleteAsync(

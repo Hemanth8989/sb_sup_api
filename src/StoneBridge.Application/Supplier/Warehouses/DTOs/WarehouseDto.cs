@@ -18,9 +18,12 @@ public sealed record WarehouseDto
     public int      OnHoldCount    { get; init; }
     public decimal? EstimatedValue { get; init; }
     // Product & supply stock KPIs
-    public int      ProductSkuCount  { get; init; }
-    public int      LowStockCount    { get; init; }
+    public int      ProductSkuCount   { get; init; }
+    public int      LowStockCount     { get; init; }
     public decimal? ProductStockValue { get; init; }
-    public DateTime CreatedAt        { get; init; }
-    public DateTime UpdatedAt        { get; init; }
+    // Capacity & notes
+    public decimal? CapacitySqft      { get; init; }
+    public string?  Notes             { get; init; }
+    public DateTime CreatedAt         { get; init; }
+    public DateTime UpdatedAt         { get; init; }
 }

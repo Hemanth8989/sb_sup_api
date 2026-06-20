@@ -13,6 +13,9 @@ using StoneBridge.Application.Supplier.Warehouses.Queries.GetWarehouse;
 using StoneBridge.Application.Supplier.Warehouses.Queries.GetWarehouses;
 using StoneBridge.Application.Supplier.Warehouses.Queries.GetWarehouseProductStock;
 using StoneBridge.Application.Supplier.Warehouses.Queries.GetStockMovements;
+using StoneBridge.Application.Supplier.Warehouses.Queries.GetWarehouseAuditLog;
+using StoneBridge.Application.Supplier.Warehouses.Queries.ExportWarehouseSlabs;
+using StoneBridge.Application.Supplier.Warehouses.Queries.GetWarehouseBundles;
 using StoneBridge.Application.Supplier.Warehouses.DTOs;
 using StoneBridge.Application.Common.Interfaces;
 
@@ -183,6 +186,43 @@ public static class WarehouseEndpoints
             return Results.Ok(result);
         })
         .WithName("GetStockMovements")
+        .Produces(200);
+
+        // GET /api/v1/supplier/warehouses/{id}/history
+        group.MapGet("{id:guid}/history", async (
+            Guid id,
+            [FromQuery] int limit = 200,
+            ISender sender = default!,
+            CancellationToken ct = default) =>
+        {
+            var result = await sender.Send(new GetWarehouseAuditLogQuery(id, limit), ct);
+            return Results.Ok(result);
+        })
+        .WithName("GetWarehouseHistory")
+        .Produces(200);
+
+        // GET /api/v1/supplier/warehouses/{id}/bundles
+        group.MapGet("{id:guid}/bundles", async (
+            Guid id,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetWarehouseBundlesQuery(id), ct);
+            return Results.Ok(result);
+        })
+        .WithName("GetWarehouseBundles")
+        .Produces(200);
+
+        // GET /api/v1/supplier/warehouses/{id}/export
+        group.MapGet("{id:guid}/export", async (
+            Guid id,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var csv = await sender.Send(new ExportWarehouseSlabsQuery(id), ct);
+            return Results.Text(csv, "text/csv");
+        })
+        .WithName("ExportWarehouseSlabs")
         .Produces(200);
     }
 }
