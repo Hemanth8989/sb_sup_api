@@ -51,6 +51,10 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ISupplierProfileRepository, SupplierProfileRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         services.AddScoped<IBundleRepository, BundleRepository>();
+        services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+        services.AddScoped<IConnectionRepository, ConnectionRepository>();
+        services.AddScoped<IPriceListRepository, PriceListRepository>();
+        services.AddScoped<IProductInventoryRepository, ProductInventoryRepository>();
 
         // ── Current tenant service ─────────────────────────────────────────
         // Scoped: reads from HttpContext which is per-request.

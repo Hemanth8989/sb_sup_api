@@ -68,14 +68,16 @@ public sealed class DbConnectionFactory : IDbConnectionFactory
             tenantType = string.Empty;
         }
 
-        // Use parameterised SET to prevent injection via malformed JWT claims
+        // PostgreSQL SET does not support parameterised values ($1 syntax is rejected).
+        // Values come from validated JWT claims; sanitise by stripping single quotes.
+        var safeTenantId   = tenantId.Replace("'", "");
+        var safeTenantType = tenantType.Replace("'", "");
+
         await using var cmd = connection.CreateCommand();
-        cmd.CommandText = """
-            SET app.tenant_id   = @TenantId;
-            SET app.tenant_type = @TenantType;
+        cmd.CommandText = $"""
+            SET app.tenant_id   = '{safeTenantId}';
+            SET app.tenant_type = '{safeTenantType}';
             """;
-        cmd.Parameters.AddWithValue("TenantId",   tenantId);
-        cmd.Parameters.AddWithValue("TenantType", tenantType);
         await cmd.ExecuteNonQueryAsync(ct);
     }
 }

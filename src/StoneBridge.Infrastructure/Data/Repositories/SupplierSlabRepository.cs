@@ -264,11 +264,13 @@ public sealed class SupplierSlabRepository : ISupplierSlabRepository
 
         return sortBy.ToLowerInvariant() switch
         {
-            "status"      => $"ORDER BY s.status {dir}, s.updated_at DESC",
-            "internalref" => $"ORDER BY s.internal_ref {dir}",
-            "netsqft"     => $"ORDER BY s.net_sqft {dir}",
-            "createdat"   => $"ORDER BY s.created_at {dir}",
-            _             => $"ORDER BY s.updated_at {dir}",
+            "status"                            => $"ORDER BY s.status {dir}, s.updated_at DESC",
+            "internalref"    or "internal_ref"  => $"ORDER BY s.internal_ref {dir}",
+            "netsqft"        or "net_sqft"      => $"ORDER BY s.net_sqft {dir}",
+            "createdat"      or "created_at"    => $"ORDER BY s.created_at {dir}",
+            "materialname"   or "material_name" => $"ORDER BY s.material_name {dir}",
+            "effectiveprice" or "effective_price" => $"ORDER BY COALESCE(s.price_override, v.base_price) {dir}",
+            _                                   => $"ORDER BY s.updated_at {dir}",
         };
     }
 

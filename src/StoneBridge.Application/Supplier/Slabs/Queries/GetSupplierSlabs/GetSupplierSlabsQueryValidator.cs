@@ -10,7 +10,9 @@ public sealed class GetSupplierSlabsQueryValidator
     : AbstractValidator<GetSupplierSlabsQuery>
 {
     private static readonly string[] ValidSortFields =
-        ["updatedAt", "status", "internalRef", "netSqft", "createdAt"];
+        ["updatedAt", "status", "internalRef", "netSqft", "createdAt",
+         "updated_at", "internal_ref", "net_sqft", "created_at",
+         "material_name", "materialName", "effective_price", "effectivePrice"];
 
     private static readonly string[] ValidSortDirs = ["ASC", "DESC"];
 
