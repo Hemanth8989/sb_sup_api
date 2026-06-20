@@ -48,14 +48,14 @@ public sealed class PriceListRepository : IPriceListRepository
         const string itemsSql = """
             SELECT
                 pli.id, pli.variant_id,
-                pv.name AS variant_name,
+                pv.variant_name,
                 pv.sku,
                 pli.unit_price,
                 pli.currency
             FROM price_list_items pli
             JOIN product_variants pv ON pv.id = pli.variant_id
             WHERE pli.price_list_id = @PriceListId
-            ORDER BY pv.name
+            ORDER BY pv.variant_name
             """;
 
         using var conn = await _db.CreateConnectionAsync(ct);
@@ -155,7 +155,7 @@ public sealed class PriceListRepository : IPriceListRepository
             RETURNING id, variant_id, unit_price, currency
             """;
 
-        const string variantSql = "SELECT name, sku FROM product_variants WHERE id = @VariantId";
+        const string variantSql = "SELECT variant_name, sku FROM product_variants WHERE id = @VariantId";
 
         using var conn = await _db.CreateConnectionAsync(ct);
         var item = await conn.QueryFirstAsync<dynamic>(sql, new
@@ -171,7 +171,7 @@ public sealed class PriceListRepository : IPriceListRepository
         {
             Id          = item.id,
             VariantId   = item.variant_id,
-            VariantName = variant?.name ?? string.Empty,
+            VariantName = variant?.variant_name ?? string.Empty,
             Sku         = variant?.sku ?? string.Empty,
             UnitPrice   = item.unit_price,
             Currency    = item.currency
@@ -183,6 +183,43 @@ public sealed class PriceListRepository : IPriceListRepository
         const string sql = "DELETE FROM price_list_items WHERE id = @ItemId AND price_list_id = @PriceListId";
         using var conn = await _db.CreateConnectionAsync(ct);
         await conn.ExecuteAsync(sql, new { ItemId = itemId, PriceListId = priceListId });
+    }
+
+    public async Task<PriceListDto> CloneAsync(
+        Guid tenantId, Guid priceListId, string newName, CancellationToken ct = default)
+    {
+        const string cloneSql = """
+            INSERT INTO price_lists (tenant_id, name, tier, currency, valid_from, valid_to)
+            SELECT tenant_id, @NewName, tier, currency, NULL, NULL
+            FROM price_lists
+            WHERE id = @PriceListId AND tenant_id = @TenantId
+            RETURNING id, name, tier, currency, valid_from, valid_to, is_active, created_at, updated_at
+            """;
+
+        const string itemsSql = """
+            INSERT INTO price_list_items (price_list_id, variant_id, unit_price)
+            SELECT @NewId, variant_id, unit_price
+            FROM price_list_items
+            WHERE price_list_id = @SourceId
+            """;
+
+        using var conn = await _db.CreateConnectionAsync(ct);
+        var row = await conn.QueryFirstOrDefaultAsync<dynamic>(cloneSql, new
+        {
+            PriceListId = priceListId,
+            TenantId    = tenantId,
+            NewName     = newName
+        });
+
+        if (row is null)
+        {
+            throw new InvalidOperationException("Source price list not found");
+        }
+
+        Guid newId = row.id;
+        await conn.ExecuteAsync(itemsSql, new { NewId = newId, SourceId = priceListId });
+
+        return MapPriceList(row);
     }
 
     private static PriceListDto MapPriceList(dynamic r) => new()

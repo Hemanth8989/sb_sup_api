@@ -2,6 +2,7 @@ using MediatR;
 using StoneBridge.Application.Supplier.Connections.Commands.AssignPriceList;
 using StoneBridge.Application.Supplier.Connections.Commands.RespondConnection;
 using StoneBridge.Application.Supplier.Connections.Commands.UpdateConnectionTier;
+using StoneBridge.Application.Supplier.Connections.Commands.UpdateNotes;
 using StoneBridge.Application.Supplier.Connections.DTOs;
 using StoneBridge.Application.Supplier.Connections.Queries.GetConnection;
 using StoneBridge.Application.Supplier.Connections.Queries.GetConnections;
@@ -49,6 +50,16 @@ public static class ConnectionEndpoints
             CancellationToken            ct) =>
         {
             var result = await sender.Send(new UpdateConnectionTierCommand(id, body.PricingTier), ct);
+            return Results.Ok(result);
+        });
+
+        group.MapPatch("/{id:guid}/notes", async (
+            Guid                          id,
+            UpdateConnectionNotesRequest  body,
+            ISender                       sender,
+            CancellationToken             ct) =>
+        {
+            var result = await sender.Send(new UpdateNotesCommand(id, body.FabricatorNotes), ct);
             return Results.Ok(result);
         });
 

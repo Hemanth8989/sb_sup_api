@@ -10,10 +10,13 @@ public interface IPurchaseOrderRepository
     Task<PurchaseOrderDto> AcknowledgeAsync(Guid supplierId, Guid poId, AcknowledgePoRequest req, CancellationToken ct = default);
     Task<PurchaseOrderDto> ShipAsync(Guid supplierId, Guid poId, ShipPoRequest req, CancellationToken ct = default);
     Task<PurchaseOrderDto> UpdateStatusAsync(Guid supplierId, Guid poId, UpdatePoStatusRequest req, CancellationToken ct = default);
+    Task<PurchaseOrderDto?> CancelAsync(Guid supplierId, Guid poId, string? reason, CancellationToken ct = default);
+    Task<PurchaseOrderDto?> UpdateSupplierNotesAsync(Guid supplierId, Guid poId, string? notes, CancellationToken ct = default);
 }
 
 public sealed record PoFilterParams(
     string?  Status    = null,
+    string?  Search    = null,
     int      Page      = 1,
     int      PerPage   = 25
 );

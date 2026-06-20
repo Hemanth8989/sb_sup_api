@@ -22,7 +22,7 @@ public sealed class ConnectionRepository : IConnectionRepository
                 t.name   AS fabricator_name,
                 t.slug   AS fabricator_slug,
                 fp.city  AS fabricator_city,
-                fp.state AS fabricator_state,
+                fp.state_province AS fabricator_state,
                 fp.phone AS fabricator_phone,
                 cpl.price_list_id::TEXT AS assigned_price_list_id,
                 pl.name                 AS assigned_price_list_name
@@ -59,7 +59,7 @@ public sealed class ConnectionRepository : IConnectionRepository
                 t.name   AS fabricator_name,
                 t.slug   AS fabricator_slug,
                 fp.city  AS fabricator_city,
-                fp.state AS fabricator_state,
+                fp.state_province AS fabricator_state,
                 fp.phone AS fabricator_phone,
                 cpl.price_list_id::TEXT AS assigned_price_list_id,
                 pl.name                 AS assigned_price_list_name

@@ -11,4 +11,5 @@ public interface IPriceListRepository
     Task DeleteAsync(Guid tenantId, Guid priceListId, CancellationToken ct = default);
     Task<PriceListItemDto> UpsertItemAsync(Guid tenantId, Guid priceListId, UpsertPriceListItemRequest req, CancellationToken ct = default);
     Task RemoveItemAsync(Guid tenantId, Guid priceListId, Guid itemId, CancellationToken ct = default);
+    Task<PriceListDto> CloneAsync(Guid tenantId, Guid priceListId, string newName, CancellationToken ct = default);
 }

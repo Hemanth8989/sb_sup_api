@@ -1,6 +1,8 @@
 using MediatR;
 using StoneBridge.Application.Supplier.PurchaseOrders.Commands.AcknowledgePo;
+using StoneBridge.Application.Supplier.PurchaseOrders.Commands.CancelPo;
 using StoneBridge.Application.Supplier.PurchaseOrders.Commands.ShipPo;
+using StoneBridge.Application.Supplier.PurchaseOrders.Commands.UpdatePoNotes;
 using StoneBridge.Application.Supplier.PurchaseOrders.Commands.UpdatePoStatus;
 using StoneBridge.Application.Common.Interfaces;
 using StoneBridge.Application.Supplier.PurchaseOrders.DTOs;
@@ -19,13 +21,14 @@ public static class PurchaseOrderEndpoints
 
         group.MapGet("/", async (
             string?  status,
+            string?  search,
             int?     page,
             int?     perPage,
             ISender  sender,
             CancellationToken ct) =>
         {
             var result = await sender.Send(
-                new GetPurchaseOrdersQuery(new PoFilterParams(status, page ?? 1, perPage ?? 25)),
+                new GetPurchaseOrdersQuery(new PoFilterParams(status, search, page ?? 1, perPage ?? 25)),
                 ct);
             return Results.Ok(result);
         });
@@ -56,6 +59,26 @@ public static class PurchaseOrderEndpoints
             return Results.Ok(result);
         });
 
+        group.MapPost("/{id:guid}/cancel", async (
+            Guid              id,
+            CancelPoBody      body,
+            ISender           sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new CancelPoCommand(id, body.Reason), ct);
+            return Results.Ok(result);
+        });
+
+        group.MapPatch("/{id:guid}/notes", async (
+            Guid              id,
+            UpdatePoNotesBody body,
+            ISender           sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new UpdatePoNotesCommand(id, body.SupplierNotes), ct);
+            return Results.Ok(result);
+        });
+
         group.MapPatch("/{id:guid}/status", async (
             Guid                  id,
             UpdatePoStatusRequest body,
@@ -67,3 +90,6 @@ public static class PurchaseOrderEndpoints
         });
     }
 }
+
+public sealed record CancelPoBody(string? Reason);
+public sealed record UpdatePoNotesBody(string? SupplierNotes);

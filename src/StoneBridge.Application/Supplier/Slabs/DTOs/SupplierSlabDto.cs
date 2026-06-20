@@ -60,10 +60,19 @@ public sealed record SupplierSlabDto
     /// <summary>Internal notes visible only to the supplier.</summary>
     public string? Notes { get; init; }
 
+    // ── Additional physical attributes ───────────────────────────────────────
+    public string?  Barcode       { get; init; }
+    public string?  LotNumber     { get; init; }
+    public string?  BlockNumber   { get; init; }
+    public decimal? WeightKg      { get; init; }
+    public string?  BundleRef     { get; init; }
+
     // ── Warehouse location ────────────────────────────────────────────────────
     public Guid?   WarehouseId    { get; init; }
+    public string? WarehouseName  { get; init; }
     public string? WarehouseCity  { get; init; }
     public string? WarehouseState { get; init; }
+    public string? RackLocation   { get; init; }
 
     // ── Photos ────────────────────────────────────────────────────────────────
     public string? PrimaryPhotoUrl { get; init; }

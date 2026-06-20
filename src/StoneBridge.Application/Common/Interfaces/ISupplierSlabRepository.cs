@@ -3,20 +3,29 @@ using StoneBridge.Application.Supplier.Slabs.DTOs;
 
 namespace StoneBridge.Application.Common.Interfaces;
 
-/// <summary>
-/// Data access contract for the supplier's inventory management.
-/// Implementations must only return slabs owned by the requesting supplier (tenant_id = supplierId).
-/// PostgreSQL RLS provides enforcement via app.tenant_id session context.
-/// </summary>
 public interface ISupplierSlabRepository
 {
-    /// <summary>
-    /// Returns a paginated, filtered list of the supplier's own slabs.
-    /// Unlike the catalog, this includes ALL statuses (available, reserved, allocated, etc.)
-    /// so suppliers can see their full inventory state.
-    /// </summary>
     Task<PagedResult<SupplierSlabDto>> GetInventoryAsync(
-        Guid                    supplierId,
-        SupplierSlabFilterParams filterParams,
-        CancellationToken        ct = default);
+        Guid supplierId, SupplierSlabFilterParams filterParams, CancellationToken ct = default);
+
+    Task<SupplierSlabDto?> GetByIdAsync(
+        Guid supplierId, Guid slabId, CancellationToken ct = default);
+
+    Task<SupplierSlabDto> CreateAsync(
+        Guid supplierId, CreateSlabRequest request, CancellationToken ct = default);
+
+    Task<SupplierSlabDto?> UpdateAsync(
+        Guid supplierId, Guid slabId, UpdateSlabRequest request, CancellationToken ct = default);
+
+    Task<SupplierSlabDto?> UpdateStatusAsync(
+        Guid supplierId, Guid slabId, string status, CancellationToken ct = default);
+
+    Task<SupplierSlabDto?> SetPriceOverrideAsync(
+        Guid supplierId, Guid slabId, decimal? price, CancellationToken ct = default);
+
+    Task<int> BulkUpdateStatusAsync(
+        Guid supplierId, IReadOnlyList<Guid> slabIds, string status, CancellationToken ct = default);
+
+    Task<bool> DeleteAsync(
+        Guid supplierId, Guid slabId, CancellationToken ct = default);
 }

@@ -1,6 +1,7 @@
 using MediatR;
 using StoneBridge.Application.Supplier.PriceLists.Commands.CreatePriceList;
 using StoneBridge.Application.Supplier.PriceLists.Commands.DeletePriceList;
+using StoneBridge.Application.Supplier.PriceLists.Commands.ClonePriceList;
 using StoneBridge.Application.Supplier.PriceLists.Commands.RemovePriceListItem;
 using StoneBridge.Application.Supplier.PriceLists.Commands.UpdatePriceList;
 using StoneBridge.Application.Supplier.PriceLists.Commands.UpsertPriceListItem;
@@ -67,6 +68,19 @@ public static class PriceListEndpoints
             return Results.Ok(result);
         });
 
+        group.MapPost("/{id:guid}/clone", async (
+            Guid              id,
+            ClonePriceListBody body,
+            ISender           sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new ClonePriceListCommand(id, body.Name), ct);
+            return Results.Created($"/api/v1/supplier/price-lists/{result.Id}", result);
+        })
+        .WithName("ClonePriceList")
+        .Produces(201)
+        .Produces(404);
+
         group.MapDelete("/{id:guid}/items/{itemId:guid}", async (
             Guid              id,
             Guid              itemId,
@@ -87,3 +101,4 @@ public sealed record UpdatePriceListBody(
     bool    IsActive);
 
 public sealed record UpsertPriceListItemBody(Guid VariantId, decimal UnitPrice);
+public sealed record ClonePriceListBody(string Name);

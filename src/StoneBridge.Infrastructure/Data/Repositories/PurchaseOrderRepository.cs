@@ -31,6 +31,7 @@ public sealed class PurchaseOrderRepository : IPurchaseOrderRepository
             JOIN tenants t ON t.id = po.fabricator_id
             WHERE po.supplier_id = @SupplierId
               AND (@Status IS NULL OR po.status = @Status)
+              AND (@Search IS NULL OR po.po_number ILIKE @SearchPat OR t.name ILIKE @SearchPat)
             ORDER BY po.created_at DESC
             LIMIT @PerPage OFFSET @Offset
             """;
@@ -40,6 +41,8 @@ public sealed class PurchaseOrderRepository : IPurchaseOrderRepository
         {
             SupplierId = supplierId,
             filter.Status,
+            Search    = string.IsNullOrWhiteSpace(filter.Search) ? null : filter.Search,
+            SearchPat = string.IsNullOrWhiteSpace(filter.Search) ? null : $"%{filter.Search}%",
             filter.PerPage,
             Offset = offset
         });
@@ -76,7 +79,7 @@ public sealed class PurchaseOrderRepository : IPurchaseOrderRepository
         const string linesSql = """
             SELECT
                 li.id, li.variant_id, li.slab_id,
-                pv.name AS variant_name, pv.sku,
+                pv.variant_name, pv.sku,
                 s.internal_ref AS slab_ref,
                 li.quantity, li.unit_of_measure, li.unit_price, li.line_total,
                 li.status, li.decline_reason, li.counter_price, li.counter_note,
@@ -178,6 +181,43 @@ public sealed class PurchaseOrderRepository : IPurchaseOrderRepository
         });
 
         return (await GetByIdAsync(supplierId, poId, ct))!;
+    }
+
+    public async Task<PurchaseOrderDto?> CancelAsync(
+        Guid supplierId, Guid poId, string? reason, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE purchase_orders
+            SET status         = 'cancelled',
+                supplier_notes = COALESCE(@Reason, supplier_notes),
+                updated_at     = NOW()
+            WHERE id = @PoId AND supplier_id = @SupplierId
+              AND status NOT IN ('received','cancelled')
+            """;
+
+        using var conn = await _db.CreateConnectionAsync(ct);
+        var affected = await conn.ExecuteAsync(sql, new { PoId = poId, SupplierId = supplierId, Reason = reason });
+        if (affected == 0)
+        {
+            return null;
+        }
+
+        return await GetByIdAsync(supplierId, poId, ct);
+    }
+
+    public async Task<PurchaseOrderDto?> UpdateSupplierNotesAsync(
+        Guid supplierId, Guid poId, string? notes, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE purchase_orders
+            SET supplier_notes = @Notes,
+                updated_at     = NOW()
+            WHERE id = @PoId AND supplier_id = @SupplierId
+            """;
+
+        using var conn = await _db.CreateConnectionAsync(ct);
+        await conn.ExecuteAsync(sql, new { PoId = poId, SupplierId = supplierId, Notes = notes });
+        return await GetByIdAsync(supplierId, poId, ct);
     }
 
     private static PurchaseOrderDto MapPo(dynamic r, IReadOnlyList<PoLineItemDto>? lines = null)

@@ -1,17 +1,18 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using StoneBridge.Application.Common.Models;
+using StoneBridge.Application.Supplier.Slabs.Commands.BulkUpdateSlabStatus;
+using StoneBridge.Application.Supplier.Slabs.Commands.CreateSlab;
+using StoneBridge.Application.Supplier.Slabs.Commands.DeleteSlab;
+using StoneBridge.Application.Supplier.Slabs.Commands.SetSlabPrice;
+using StoneBridge.Application.Supplier.Slabs.Commands.UpdateSlab;
+using StoneBridge.Application.Supplier.Slabs.Commands.UpdateSlabStatus;
 using StoneBridge.Application.Supplier.Slabs.DTOs;
+using StoneBridge.Application.Supplier.Slabs.Queries.GetSlab;
 using StoneBridge.Application.Supplier.Slabs.Queries.GetSupplierSlabs;
 
 namespace StoneBridge.Api.Endpoints;
 
-/// <summary>
-/// Supplier inventory endpoints — accessible to supplier tenants only.
-/// Fabricators are rejected with 403 at the handler level.
-///
-/// Base path: /api/v1/supplier/slabs
-/// </summary>
 public static class SupplierSlabEndpoints
 {
     public static IEndpointRouteBuilder MapSupplierSlabEndpoints(this IEndpointRouteBuilder app)
@@ -20,42 +21,24 @@ public static class SupplierSlabEndpoints
             .WithTags("Supplier — Inventory")
             .RequireAuthorization();
 
-        // ── GET /api/v1/supplier/slabs ────────────────────────────────────────
-        // Returns the supplier's own slab inventory — all statuses by default.
-        // Filter by status to get just available stock, reserved slabs, etc.
+        // GET / — paginated inventory list with filters
         group.MapGet("/", async (
-            // Full-text search
-            [FromQuery] string? searchQuery,
-
-            // Status filter (comma-separated): available,reserved,allocated,shipped,hold,sold
-            [FromQuery] string? statuses,
-
-            // Multi-value material filters (comma-separated)
-            [FromQuery] string? materialTypes,
-            [FromQuery] string? colorFamilies,
-            [FromQuery] string? finishes,
-
-            // Range filters
+            [FromQuery] string?  searchQuery,
+            [FromQuery] string?  statuses,
+            [FromQuery] string?  materialTypes,
+            [FromQuery] string?  colorFamilies,
+            [FromQuery] string?  finishes,
             [FromQuery] decimal? thicknessMin,
             [FromQuery] decimal? thicknessMax,
             [FromQuery] decimal? minNetSqft,
-
-            // Boolean filter
-            [FromQuery] bool? isRemnant,
-
-            // Location filter
-            [FromQuery] Guid? warehouseId,
-
-            // Sorting
-            [FromQuery] string sortBy  = "updatedAt",
-            [FromQuery] string sortDir = "DESC",
-
-            // Pagination
-            [FromQuery] int page    = 1,
-            [FromQuery] int perPage = 50,
-
-            ISender           sender = default!,
-            CancellationToken ct     = default) =>
+            [FromQuery] bool?    isRemnant,
+            [FromQuery] Guid?    warehouseId,
+            [FromQuery] string   sortBy  = "updatedAt",
+            [FromQuery] string   sortDir = "DESC",
+            [FromQuery] int      page    = 1,
+            [FromQuery] int      perPage = 50,
+            ISender sender = default!,
+            CancellationToken ct = default) =>
         {
             var filterParams = new SupplierSlabFilterParams
             {
@@ -74,46 +57,69 @@ public static class SupplierSlabEndpoints
                 Page           = Math.Max(1, page),
                 PerPage        = Math.Clamp(perPage, 1, 100),
             };
-
             var result = await sender.Send(new GetSupplierSlabsQuery(filterParams), ct);
-
             return Results.Ok(result);
-        })
-        .WithName("GetSupplierInventory")
-        .WithSummary("Get the supplier's slab inventory.")
-        .WithDescription("""
-            Supplier-only endpoint. Returns all slabs belonging to the authenticated supplier.
-            Unlike the fabricator catalog, this includes slabs in ALL statuses so suppliers
-            can see their complete inventory picture.
+        });
 
-            Filter by status to narrow the view:
-              ?statuses=available               → only available stock
-              ?statuses=available,reserved      → available + reserved
-              ?statuses=reserved,allocated      → slabs committed to purchase orders
+        // GET /{id} — single slab detail
+        group.MapGet("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetSlabQuery(id), ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
 
-            Multi-value parameters accept comma-separated values:
-              ?materialTypes=marble,granite
-              ?colorFamilies=white,cream
-              ?finishes=polished,honed
+        // POST / — create slab
+        group.MapPost("/", async (CreateSlabRequest body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new CreateSlabCommand(body), ct);
+            return Results.Created($"/api/v1/supplier/slabs/{result.Id}", result);
+        });
 
-            Sort options: updatedAt (default), status, internalRef, netSqft, createdAt
-            Sort directions: DESC (default), ASC
-            """)
-        .Produces<PagedResult<SupplierSlabDto>>(StatusCodes.Status200OK)
-        .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
-        .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
-        .Produces<ValidationProblemDetails>(StatusCodes.Status422UnprocessableEntity);
+        // PUT /{id} — update slab
+        group.MapPut("/{id:guid}", async (Guid id, UpdateSlabRequest body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new UpdateSlabCommand(id, body), ct);
+            return Results.Ok(result);
+        });
+
+        // PATCH /{id}/status — update status
+        group.MapPatch("/{id:guid}/status", async (
+            Guid id, SlabStatusBody body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new UpdateSlabStatusCommand(id, body.Status), ct);
+            return Results.Ok(result);
+        });
+
+        // PATCH /{id}/price — set price override (null = clear override)
+        group.MapPatch("/{id:guid}/price", async (
+            Guid id, SlabPriceBody body, ISender sender, CancellationToken ct) =>
+        {
+            var result = await sender.Send(new SetSlabPriceCommand(id, body.PriceOverride), ct);
+            return Results.Ok(result);
+        });
+
+        // POST /bulk-status — bulk update status for multiple slabs
+        group.MapPost("/bulk-status", async (
+            BulkUpdateSlabStatusRequest body, ISender sender, CancellationToken ct) =>
+        {
+            var count = await sender.Send(
+                new BulkUpdateSlabStatusCommand(body.SlabIds, body.Status), ct);
+            return Results.Ok(new { updated = count });
+        });
+
+        // DELETE /{id} — soft-delete (sets is_active = false)
+        group.MapDelete("/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
+        {
+            await sender.Send(new DeleteSlabCommand(id), ct);
+            return Results.NoContent();
+        });
 
         return app;
     }
 
     private static IReadOnlyList<string> SplitCsv(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return [];
-        }
-
+        if (string.IsNullOrWhiteSpace(value)) { return []; }
         return value
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Where(s => !string.IsNullOrEmpty(s))
@@ -121,3 +127,6 @@ public static class SupplierSlabEndpoints
             .AsReadOnly();
     }
 }
+
+public sealed record SlabStatusBody(string Status);
+public sealed record SlabPriceBody(decimal? PriceOverride);

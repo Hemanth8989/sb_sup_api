@@ -24,6 +24,7 @@ public static class EndpointExtensions
         app.MapPriceListEndpoints();
         app.MapProductInventoryEndpoints();
         app.MapAnalyticsEndpoints();
+        app.MapNotificationEndpoints();
 
         return app;
     }
